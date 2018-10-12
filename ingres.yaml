@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: web-ingress
+  namespace: default
+spec:
+  rules:
+  - host: expenses.loc
+    http:
+      paths:
+      - backend:
+          serviceName: expensesweb
+          servicePort: 80
+  - host: caricatures.loc
+    http:
+      paths:
+      - backend:
+          serviceName: caricaturesweb
+          servicePort: 80
+  - host: pstoyanov.com
+    http:
+      paths:
+      - backend:
+          serviceName: pstoyanovweb
+          servicePort: 80
+  - host: phpmyadmin.loc
+    http:
+      paths:
+      - backend:
+          serviceName: phpmyadmin
+          servicePort: 80

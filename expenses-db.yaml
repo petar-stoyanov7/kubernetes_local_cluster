@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: expensesdb
+spec:
+  selector:
+    matchLabels:
+      app: expensesdb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: expensesdb
+    spec:
+      containers:
+      - image: mysql:5.7
+        name: expensesdb
+        env:
+        - name: MYSQL_DATABASE
+          value: pestart_car_expenses
+        - name: MYSQL_USER
+          value: pestart_expense
+        - name: MYSQL_PASSWORD
+          value: <blank>
+        - name: MYSQL_ROOT_PASSWORD
+          value: <blank>
+        ports:
+        - containerPort: 3306
+          name: expensesdb
+        volumeMounts:
+        - name: expenses-db-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: expenses-db-storage
+        persistentVolumeClaim:
+          claimName: expenses-db-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: expensesdb
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: expensesdb
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: expenses-db-volume
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/db/expenses"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: expenses-db-claim
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

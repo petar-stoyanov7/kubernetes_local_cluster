@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: caricaturesweb
+spec:
+  selector:
+    matchLabels:
+      app: caricaturesweb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: caricaturesweb
+    spec:
+      containers:
+      - image: kamerer/php-apache
+        name: caricaturesweb
+        ports:
+        - containerPort: 80
+          name: http
+        - containerPort: 443
+          name: https
+        volumeMounts:
+        - name: caricatures-web-storage
+          mountPath: /var/www/html
+      volumes:
+      - name: caricatures-web-storage
+        persistentVolumeClaim:
+          claimName: caricatures-web-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: caricaturesweb
+spec:
+  type: NodePort  
+  ports:
+  - port: 80
+    name: http
+  - port: 443
+    name: https
+  selector:
+    app: caricaturesweb
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: caricatures-web-volume
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/pest-caricatures"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: caricatures-web-claim
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

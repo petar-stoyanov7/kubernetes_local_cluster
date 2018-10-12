@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: caricaturesdb
+spec:
+  selector:
+    matchLabels:
+      app: caricaturesdb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: caricaturesdb
+    spec:
+      containers:
+      - image: mysql:5.7
+        name: caricaturesdb
+        env:
+        - name: MYSQL_DATABASE
+          value: pestart_caricatures
+        - name: MYSQL_USER
+          value: pestart_caricatures
+        - name: MYSQL_PASSWORD
+          value: <blank>
+        - name: MYSQL_ROOT_PASSWORD
+          value: <blank>
+        ports:
+        - containerPort: 3306
+          name: caricaturesdb
+        volumeMounts:
+        - name: caricatures-db-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: caricatures-db-storage
+        persistentVolumeClaim:
+          claimName: caricatures-db-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: caricaturesdb
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: caricaturesdb
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: caricatures-db-volume
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/db/caricatures"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: caricatures-db-claim
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
